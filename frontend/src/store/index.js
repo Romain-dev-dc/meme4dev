@@ -4,12 +4,19 @@ import apiService from '../services/apiService';
 const store = createStore({
   state: {
     authenticated: false,
+    token: '',
     memes: [],
     images: []
   },
   mutations: {
-    setAuthenticated(state, value) {
-      state.authenticated = value;
+    setAuthenticated(state, { authenticated, token }) {
+      state.authenticated = authenticated;
+      state.token = token;
+      if (authenticated) {
+        localStorage.setItem('token', token);
+      } else {
+        localStorage.removeItem('token');
+      }
     },
     setMemes(state, memes) {
       state.memes = memes;
@@ -26,13 +33,17 @@ const store = createStore({
     async authenticate({ commit }, password) {
       try {
         const response = await apiService.authenticate(password);
-        if (response.data) {
-          commit('setAuthenticated', true);
-        }
-        return response.data;
+        commit('setAuthenticated', { authenticated: response.data.authenticated, token: response.data.token });
+        return response.data.authenticated;
       } catch (error) {
         console.error("Authentication failed:", error);
         return false;
+      }
+    },
+    checkAuthentication({ commit }) {
+      const token = localStorage.getItem('token');
+      if (token) {
+        commit('setAuthenticated', { authenticated: true, token });
       }
     },
     async fetchMemes({ commit }) {
@@ -49,6 +60,7 @@ const store = createStore({
         dispatch('fetchMemes');
       } catch (error) {
         console.error("Failed to delete meme:", error);
+        throw error;
       }
     },
     async createMeme({ dispatch }, memeData) {
@@ -67,6 +79,9 @@ const store = createStore({
       } catch (error) {
         console.error("Failed to fetch images:", error);
       }
+    },
+    logout({ commit }) {
+      commit('setAuthenticated', { authenticated: false, token: '' });
     }
   }
 });

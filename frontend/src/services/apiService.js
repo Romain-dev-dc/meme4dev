@@ -7,6 +7,15 @@ const apiClient = axios.create({
   }
 });
 
+// Ajouter un intercepteur pour inclure le token dans les en-têtes des requêtes
+apiClient.interceptors.request.use(config => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export default {
   authenticate(password) {
     return apiClient.post('/authenticate', { password });
@@ -24,6 +33,7 @@ export default {
     } else {
       formData.append('imagePath', memeData.imagePath);
     }
+    formData.append('title', memeData.title);
     formData.append('topText', memeData.topText);
     formData.append('middleText', memeData.middleText);
     formData.append('bottomText', memeData.bottomText);

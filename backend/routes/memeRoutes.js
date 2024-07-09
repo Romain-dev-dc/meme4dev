@@ -1,14 +1,10 @@
 const express = require('express');
-const multer = require('multer');
-const { getAllMemes, getMeme, createMeme, deleteMeme, getImages } = require('../controllers/memeController');
 const router = express.Router();
+const memeController = require('../controllers/memeController');
 
-const upload = multer({ dest: 'uploads/' });
-
-router.get('/memes', getAllMemes);
-router.get('/memes/:id', getMeme);
-router.get('/images', getImages);
-router.post('/memes', upload.single('image'), createMeme);
-router.delete('/memes/:id', deleteMeme);
+router.get('/memes', memeController.getAllMemes);
+router.post('/memes', memeController.createMeme);
+router.get('/memes/:id', memeController.getMemeById);
+router.delete('/memes/:id', memeController.deleteMeme);
 
 module.exports = router;
